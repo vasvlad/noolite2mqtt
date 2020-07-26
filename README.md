@@ -1,3 +1,3 @@
-# noolite2mqqt
-Bridge for noolite and mqqt
+# noolite2mqtt
+Bridge for noolite and mqtt
 

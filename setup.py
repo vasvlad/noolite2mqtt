@@ -11,7 +11,7 @@ setuptools.setup(
     description="NooLite to MQTT bridge",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/vasvlad/noolite2mqqt",
+    url="https://github.com/vasvlad/noolite2mqtt",
     keywords="noolite mqtt",
     packages=['noolite2mqtt'],
     install_requires=[
