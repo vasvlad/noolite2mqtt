@@ -18,6 +18,7 @@ setuptools.setup(
         'NooLite_F',
     ],
     scripts=[
+        'noolite2mqtt/noolite2mqtt.py',
     ],
     entry_points={
     },
