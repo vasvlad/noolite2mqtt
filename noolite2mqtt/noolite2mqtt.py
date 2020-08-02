@@ -3,11 +3,29 @@
 
 import paho.mqtt.client as mqtt
 import argparse
-from NooLite_F.MTRF64.MTRF64Adapter import MTRF64Adapter, IncomingData, Command
+from NooLite_F.MTRF64.MTRF64Adapter import MTRF64Adapter, \
+                                           IncomingData, OutgoingData, \
+                                           Command, Action, Mode
 
 clientId = "Noolite2MqttClient"
 topic = "/devices/"
 counter = 0
+nooliteFdevices = []
+
+
+# Search NooliteF devices
+def search_nooliteFdevices(adapter, array):
+    array.clear()
+    request = OutgoingData()
+    request.action = Action.SEND_BROADCAST_COMMAND
+    request.mode = Mode.TX_F
+    request.command = Command.READ_STATE
+
+    for i in range(0, 64):
+        request.channel = i
+        response = adapter.send(request)
+        if (response[0].command == 130):
+            nooliteFdevices.append(i)
 
 
 # The callback for when a PUBLISH message is received from the server.
@@ -63,6 +81,9 @@ client.on_connect = on_mqtt_connect
 client.on_message = on_mqtt_message
 client.on_publish = on_mqtt_publish
 client.connect("127.0.0.1", 1883, 60)
+
+search_nooliteFdevices(adapter, nooliteFdevices)
+
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
