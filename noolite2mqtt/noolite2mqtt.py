@@ -30,16 +30,16 @@ def on_mqtt_publish(mosq, obj, mid):
     print("mid: " + str(counter))
 
 
-def on_receive_data(incoming_data: IncomingData):
+def on_receive_noolite_data(incoming_data: IncomingData):
     print("data: {0}".format(incoming_data))
     print("counter: {0}".format(counter))
     if incoming_data.command == Command.LOAD_PRESET:
         client.publish(topic + "channel" + str(incoming_data.channel) + "/" +
-                       str(Command(int(incoming_data.command))).split(".")[1].lower(),
+                       str(Command(int(incoming_data.command))).split(".")[1].lower(),  # noqa: E501
                        str(counter), 1)
     else:
         client.publish(topic + "channel" + str(incoming_data.channel) + "/" +
-                       str(Command(int(incoming_data.command))).split(".")[1].lower(),
+                       str(Command(int(incoming_data.command))).split(".")[1].lower(),  # noqa: E501
                        str(counter), 1)
 
 
@@ -57,7 +57,7 @@ args = parser.parse_args()
 serial_port = args.serialport
 topic = args.topic
 
-adapter = MTRF64Adapter(serial_port, on_receive_data)
+adapter = MTRF64Adapter(serial_port, on_receive_noolite_data)
 client = mqtt.Client(clientId)
 client.on_connect = on_mqtt_connect
 client.on_message = on_mqtt_message
