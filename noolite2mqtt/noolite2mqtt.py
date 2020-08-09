@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import threading
+import time
 import paho.mqtt.client as mqtt
 import argparse
 from NooLite_F.MTRF64.MTRF64Adapter import MTRF64Adapter, \
@@ -8,7 +10,7 @@ from NooLite_F.MTRF64.MTRF64Adapter import MTRF64Adapter, \
                                            Command, Action, Mode
 
 clientId = "Noolite2MqttClient"
-topic = "/devices/"
+topic = "/devices/noolite/"
 counter = 0
 nooliteFdevices = []
 
@@ -28,9 +30,50 @@ def search_nooliteFdevices(adapter, array):
             nooliteFdevices.append(i)
 
 
+# Read states of all NooliteF devices
+def read_nooliteFdevices_states():
+    request = OutgoingData()
+    request.action = Action.SEND_BROADCAST_COMMAND
+    request.mode = Mode.TX_F
+    request.command = Command.READ_STATE
+    while True:
+        for channel in nooliteFdevices:
+            request.channel = channel
+            response = adapter.send(request)
+            # TODO Make parse for Bright
+            if response[0].data[2] & 0b0000001 == 1:
+                client.publish(topic + "channel" +
+                               str(channel) + "/state", "1")
+            else:
+                client.publish(topic + "channel" +
+                               str(channel) + "/state", "0")
+        time.sleep(60)
+
+
 # The callback for when a PUBLISH message is received from the server.
 def on_mqtt_message(client, userdata, msg):
     print(msg.topic)
+    if topic + "channel" in msg.topic:
+        if msg.topic.split("/")[4] == "on":
+            channelId = int(msg.topic.split("/")[3][7:])
+            request = OutgoingData()
+            request.action = Action.SEND_COMMAND
+            request.mode = Mode.TX_F
+            request.channel = channelId
+            if (int(msg.payload) == 1):
+                request.command = Command.ON
+            else:
+                request.command = Command.OFF
+
+            response = adapter.send(request)
+            if channelId in nooliteFdevices:
+                # TODO Make parse for Bright
+                if response[0].data[2] & 0b0000001 == 1:
+                    client.publish(topic + "channel" +
+                                   str(channelId) + "/state", "1")
+                else:
+                    client.publish(topic + "channel" +
+                                   str(channelId) + "/state", "0")
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -83,7 +126,9 @@ client.on_publish = on_mqtt_publish
 client.connect("127.0.0.1", 1883, 60)
 
 search_nooliteFdevices(adapter, nooliteFdevices)
-
+# Run threading for read nooliteF devices_states every 60 secounds
+t = threading.Thread(target=read_nooliteFdevices_states)
+t.start()
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
