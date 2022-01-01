@@ -58,7 +58,10 @@ def on_mqtt_message(client, userdata, msg):
             channelId = int(msg.topic.split("/")[3][7:])
             request = OutgoingData()
             request.action = Action.SEND_COMMAND
-            request.mode = Mode.TX_F
+            if channelId in nooliteFdevices:
+            	request.mode = Mode.TX_F
+            else:
+            	request.mode = Mode.TX
             request.channel = channelId
             if (int(msg.payload) == 1):
                 request.command = Command.ON
