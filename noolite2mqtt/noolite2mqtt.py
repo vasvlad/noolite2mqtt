@@ -57,7 +57,7 @@ def on_mqtt_message(client, userdata, msg):
         if msg.topic.split("/")[4] == "on":
             request = OutgoingData()
             request.action = Action.SEND_COMMAND
-            if msg.topic.split("/")[3][-1] == 'f'
+            if msg.topic.split("/")[3][-1] == 'f':
                 request.mode = Mode.TX_F
                 channelId = int(msg.topic.split("/")[3][7:-1])
             else:
