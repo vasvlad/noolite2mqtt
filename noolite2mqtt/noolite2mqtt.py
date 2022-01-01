@@ -17,7 +17,7 @@ nooliteFdevices = []
 
 # Search NooliteF devices
 def search_nooliteFdevices(adapter, array):
-    array.clear()
+    # array.clear()
     request = OutgoingData()
     request.action = Action.SEND_BROADCAST_COMMAND
     request.mode = Mode.TX_F
@@ -26,7 +26,7 @@ def search_nooliteFdevices(adapter, array):
     for i in range(0, 64):
         request.channel = i
         response = adapter.send(request)
-        if (response[0].command == 130):
+        if (response[0].command == 130 and i not in nooliteFdevices):
             nooliteFdevices.append(i)
 
 
@@ -55,12 +55,13 @@ def on_mqtt_message(client, userdata, msg):
     print(msg.topic)
     if topic + "channel" in msg.topic:
         if msg.topic.split("/")[4] == "on":
-            channelId = int(msg.topic.split("/")[3][7:])
             request = OutgoingData()
             request.action = Action.SEND_COMMAND
-            if channelId in nooliteFdevices:
+            if msg.topic.split("/")[3][-1] == 'f'
                 request.mode = Mode.TX_F
+                channelId = int(msg.topic.split("/")[3][7:-1])
             else:
+                channelId = int(msg.topic.split("/")[3][7:])
                 request.mode = Mode.TX
             request.channel = channelId
             if (int(msg.payload) == 1):
@@ -129,9 +130,13 @@ client.on_publish = on_mqtt_publish
 client.connect("127.0.0.1", 1883, 60)
 
 search_nooliteFdevices(adapter, nooliteFdevices)
+time.sleep(2)
+search_nooliteFdevices(adapter, nooliteFdevices)
+print(nooliteFdevices)
 # Run threading for read nooliteF devices_states every 60 secounds
 t = threading.Thread(target=read_nooliteFdevices_states)
 t.start()
+
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
