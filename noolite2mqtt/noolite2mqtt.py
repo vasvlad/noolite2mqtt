@@ -26,7 +26,7 @@ def search_nooliteFdevices(adapter, array):
     for i in range(0, 64):
         request.channel = i
         response = adapter.send(request)
-        if (response[0].command == 130 and i not in nooliteFdevices):
+        if (response != [] and response[0].command == 130 and i not in nooliteFdevices):
             nooliteFdevices.append(i)
 
 
